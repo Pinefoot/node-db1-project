@@ -3,7 +3,7 @@ const express = require('express');
 const db = require('../data/dbConfig');
 const router = express.Router();
 
-module.exports = router;
+
 
 router.get('/', (req, res) => {
     db.select('*')
@@ -34,6 +34,7 @@ router.get('/:id', (req, res) => {
 router.post('/', (req, res) => {
     const post = req.body;
     //need to wrap this in a conditional validation eventually
+    if (isValid(post)){
     db('accounts')
     .insert(post, "id")
     .then(ids =>{
@@ -43,14 +44,19 @@ router.post('/', (req, res) => {
         console.log(err)
         res.status(500).json({message : error.message})
     })
+    }
+    else{
+        res.status(400).json({message : 'add those required name and budget fields fool!'})
+    }
     
 })
 
 router.put('/:id', (req, res) => {
     const updates = req.body;
+    if (isValid(updates)){
     db('accounts')
     .where({id: req.params.id})
-    .update(changes)
+    .update(updates)
     .then(records =>{
         if(records > 0 ){
             res.status(200).json({data: records})
@@ -60,7 +66,9 @@ router.put('/:id', (req, res) => {
     }).catch(err =>{
         res.status(500).json({message: err.message})
     })
-    
+}else{
+    res.status(400).json({message : 'look you can\'t just go around updating shit all willy nilly without giving me the info that I need to update it here. Come on, grow up.'})
+}
 })
 
 router.delete('/:id', (req, res) =>{
@@ -77,3 +85,14 @@ router.delete('/:id', (req, res) =>{
         res.status(500).json({message: err.message})
     })
 })
+
+
+function isValid(account){
+    return Boolean(account.name && account.budget)
+}
+
+
+
+
+
+module.exports = router;
